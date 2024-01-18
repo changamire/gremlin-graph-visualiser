@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+ 
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  <title>Graph Visualiser</title>
+  <style type="text/css">
+    html {
+      height: 100%;
+    }
+ 
+    body {
+      font: 10pt arial;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+    }
+ 
+    #content {
+      height: 100%;
+    }
+ 
+    #network {
+      width: 100%;
+      height: 100%;
+      border: 1px solid lightgray;
+    }
+  </style>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="main.js"></script>
+</head>
+ 
+<body>
+  <div id="header" class="row">
+    <div class="col-12 input-group">
+      <div class="input-group-prepend">
+        <span class="input-group-text" id="findbyID">Find vertex by ID</span>
+      </div>
+      <input type="text" class="form-control" id="nodeid" placeholder="Vertex Id" />
+      <button class="btn btn-info" type="submit" id="find">Find</button>
+    </div>
+  </div>
+  <div id="content" class="row">
+    <div id="network"></div>
+  </div>
+</body>
+ 
+</html>
