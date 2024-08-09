@@ -1,122 +1,121 @@
 $(document).ready(function () {
-    var dom = document.getElementById('network');
-    myChart = echarts.init(dom);
-    nodes = new Map();
-    links = new Map();
-    categories = [{ name: "Test" }];
-    var graph = { nodes: Array.from(nodes.values()), links: Array.from(links.values()), categories: categories };
- 
-    var option = option = {
-        title: {
-            subtext: 'Default layout',
-            top: 'bottom',
-            left: 'right'
-        },
-        tooltip: {
-            trigger: 'item',
-            triggerOn: 'mousemove',
-            formatter: function (params) {
-                console.log(params);
-                var properties = formatProperties(params.data.properties);
-                return `Id: ${params.data.id}<br />Label: ${params.data.label}<br /> ${properties}`;
-            }
-        },
-        legend: [
-            {
-                // selectedMode: 'single',
-                data: graph.categories.map(function (a) {
-                    return a.name;
-                })
-            }
-        ],
-        series: [
-            {
-                type: 'graph',
-                layout: 'force',
-                data: graph.nodes,
-                links: graph.links,
-                categories: graph.categories,
-                edgeSymbol: ['circle', 'arrow'],
-                edgeSymbolSize: [5, 5],
-                roam: true,
-                label: {
-                    position: 'right'
-                },
-                force: {
-                    repulsion: 100,
-                    layoutAnimation: true
-                },
-                label: {
-                    show: false,
-                    fontSize: 8
-                },
-                edgeLabel: {
-                    normal: {
-                        textStyle: {
-                            fontSize: 10
-                        }
-                    }
-                }
-            }
-        ]
+    nodes = new vis.DataSet();
+    edges = new vis.DataSet();
+
+    var container = document.getElementById("network");
+    var data = {
+        nodes: nodes,
+        edges: edges,
     };
- 
-    myChart.setOption(option);
-    myChart.on('click', function (params) {
-        var data = params.data
-        getData(data.id);
+    options = {
+        width: $("#network").innerWidth() + "px",
+        height: $("#network").innerHeight() + "px",
+        layout: {
+            hierarchical: {
+                enabled: true,
+                edgeMinimization: true,
+            },
+            improvedLayout: true,
+        },
+        nodes: {
+            shape: "box",
+            margin: 10,
+            widthConstraint: {
+                maximum: 25,
+            },
+            scaling: {
+                label: true,
+            },
+            widthConstraint: {
+                minimum: 50,
+                maximum: 200,
+            },
+            shapeProperties: {
+                interpolation: true,
+            },
+        },
+        edges: {
+            arrows: {
+                to: {
+                    enabled: true,
+                    type: "arrow",
+                },
+            },
+            font: {
+                size: 8,
+            },
+        },
+    };
+
+    network = new vis.Network(container, data, options);
+
+    network.on("click", function (properties) {
+        const ids = properties.nodes;
+        const clickedNodes = nodes.get(ids);
+        const clickedNodeId = ids[0];
+        $("#nodeId").val(clickedNodeId);
+        $("#label").val(clickedNodes[0].label);
+        getData(clickedNodeId);
     });
- 
+
     $("#find").click(function () {
         nodes.clear();
-        links.clear();
+        edges.clear();
         getData($("#nodeid").val());
     });
 });
- 
+
 function getData(nodeId) {
     $.ajax({
         type: "GET",
         url: `http://localhost:3000/graph/neighbours/${nodeId}`,
         dataType: "json",
         success: function (result, status, xhr) {
-            result.vertices.forEach(node => {
+            result.vertices.forEach((node) => {
                 if (nodes.get("" + node.id) == null) {
-                    nodes.set(node.id, { id: "" + node.id, label: node.label, properties: node.properties, name: node.id, category: getCategoryIndex(node.label) });
+                    nodes.add({
+                        id: "" + node.id,
+                        label: `Id: ${node.id}\n Label: ${node.label}`,
+                        title: formatProperties(node.properties),
+                    });
                 }
             });
-            result.edges.forEach(edge => {
-                try {
-                    if (links.get(edge.id) == null) {
-                        links.set(edge.id, { id: edge.label, name: edge.label, source: edge.from.id, target: edge.to.id, label: edge.label, label: {show: true}  });
-                    }
-                } catch (e) {
-                    console.log(e);
+            result.edges.forEach((edge) => {
+                if (edges.get("" + edge.id) == null) {
+                    edges.add({
+                        id: edge.id,
+                        from: edge.from.id,
+                        to: edge.to.id,
+                        label: edge.label,
+                    });
                 }
             });
-            myChart.setOption({ series: [{ data: Array.from(nodes.values()), links: Array.from(links.values()) }] });
         },
         error: function (xhr, status, error) {
-            alert("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText)
-        }
+            alert(
+                "Result: " +status + " " + error + " " + xhr.status + " " + xhr.statusText
+            );
+        },
     });
- 
-};
- 
+}
+
 function getCategoryIndex(label) {
     if (label.includes("test")) {
         return 0;
-    } 
+    }
 }
- 
+
 function formatProperties(properties) {
     var propertiesString = "";
     if (properties != null) {
         for (const [key, value] of Object.entries(properties)) {
-            console.log(value);
-            propertiesString = propertiesString.concat(`${key}: ${value} <br />`);
+            propertiesString = propertiesString.concat(`${key}: ${value} \n`);
         }
     }
     console.log(propertiesString);
     return propertiesString;
+}
+
+function getColor(label) {
+    return "#DAE8FC";
 }
